@@ -1,65 +1,391 @@
-import Image from "next/image";
+"use client";
+
+import { useState, useEffect } from "react";
+import Hero from "@/components/Hero";
+import Footer from "@/components/Footer";
+import Navbar from "@/components/Navbar";
+import MenuCard from "@/components/MenuCard";
+import CartDrawer from "@/components/CartDrawer";
+import AddOnModal from "@/components/AddOnModal";
+import Invoice from "@/components/Invoice";
+import { toPng } from "html-to-image";
+
+import { burgers, pizzas, maggie, pasta, rolls, sides } from "@/data/menu";
 
 export default function Home() {
+  const [cart, setCart] = useState<any[]>([]);
+  const [cartOpen, setCartOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [vegOnly, setVegOnly] = useState(false);
+  const [nonVegOnly, setNonVegOnly] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [addonModalOpen, setAddonModalOpen] = useState(false);
+  const [orderNote, setOrderNote] = useState("");
+
+  const generateInvoice = async () => {
+    const node = document.getElementById("invoice");
+
+    if (!node) return;
+
+    try {
+      const dataUrl = await toPng(node, {
+        cacheBust: true,
+        pixelRatio: 2,
+      });
+
+      const link = document.createElement("a");
+      link.download = "MannaKitchenInvoice.png";
+      link.href = dataUrl;
+      link.click();
+    } catch (error) {
+      console.error("Invoice generation failed:", error);
+    }
+  };
+
+  const clearCart = () => {
+    setCart([]);
+    localStorage.removeItem("manna-cart");
+  };
+
+  useEffect(() => {
+    const savedCart = localStorage.getItem("manna-cart");
+
+    if (savedCart) {
+      setCart(JSON.parse(savedCart));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("manna-cart", JSON.stringify(cart));
+  }, [cart]);
+
+  const addToCart = (item: any) => {
+    const existingItem = cart.find((cartItem) => cartItem.name === item.name);
+
+    if (existingItem) {
+      setCart(
+        cart.map((cartItem) =>
+          cartItem.name === item.name
+            ? {
+                ...cartItem,
+                quantity: cartItem.quantity + 1,
+              }
+            : cartItem,
+        ),
+      );
+    } else {
+      setCart([
+        ...cart,
+        {
+          ...item,
+          quantity: 1,
+        },
+      ]);
+    }
+  };
+
+  const increaseQuantity = (name: string) => {
+    setCart(
+      cart.map((item) =>
+        item.name === name ? { ...item, quantity: item.quantity + 1 } : item,
+      ),
+    );
+  };
+
+  const decreaseQuantity = (name: string) => {
+    setCart(
+      cart
+        .map((item) =>
+          item.name === name ? { ...item, quantity: item.quantity - 1 } : item,
+        )
+        .filter((item) => item.quantity > 0),
+    );
+  };
+
+  const removeFromCart = (name: string) => {
+    setCart(cart.filter((item) => item.name !== name));
+  };
+  const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
+  const filterItems = (items: any[]) => {
+    if (vegOnly) {
+      return items.filter((item) => item.type === "veg");
+    }
+
+    if (nonVegOnly) {
+      return items.filter((item) => item.type === "nonveg");
+    }
+
+    return items;
+  };
+
+  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+    <main className="bg-black text-white min-h-screen">
+      <Navbar
+        cartCount={cartCount}
+        onCartClick={() => setCartOpen(true)}
+        vegOnly={vegOnly}
+        nonVegOnly={nonVegOnly}
+        setVegOnly={setVegOnly}
+        setNonVegOnly={setNonVegOnly}
+      />
+
+      <Hero />
+
+      {/* BURGERS */}
+      <section id="burgers" className="max-w-7xl mx-auto px-6 py-16">
+        <h2 className="text-5xl font-bold text-center text-orange-500 mb-12">
+           BURGERS
+        </h2>
+
+        <div
+          className="grid
+grid-cols-1
+sm:grid-cols-2
+lg:grid-cols-3
+gap-6"
+        >
+          {filterItems(burgers).map((item, index) => (
+            <MenuCard
+              key={index}
+              item={item}
+              onAdd={() => {
+                setSelectedItem(item);
+                setAddonModalOpen(true);
+              }}
             />
-            Deploy Now
+          ))}
+        </div>
+      </section>
+
+      {/* PIZZAS */}
+      <section id="pizzas" className="max-w-7xl mx-auto px-6 py-16">
+        <h2 className="text-5xl font-bold text-center text-orange-500 mb-12">
+           PIZZAS
+        </h2>
+
+        <div
+          className="grid
+grid-cols-1
+sm:grid-cols-2
+lg:grid-cols-3
+gap-6"
+        >
+          {filterItems(pizzas).map((item, index) => (
+            <MenuCard
+              key={index}
+              item={item}
+              onAdd={() => {
+                setSelectedItem(item);
+                setAddonModalOpen(true);
+              }}
+            />
+          ))}
+        </div>
+      </section>
+
+      {/* MAGGIE */}
+      <section id="maggie" className="max-w-7xl mx-auto px-6 py-16">
+        <h2 className="text-5xl font-bold text-center text-orange-500 mb-12">
+           MAGGIE
+        </h2>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {filterItems(maggie).map((item, index) => (
+            <MenuCard
+              key={index}
+              item={item}
+              onAdd={() => {
+                setSelectedItem(item);
+                setAddonModalOpen(true);
+              }}
+            />
+          ))}
+        </div>
+      </section>
+
+      {/* PASTA */}
+      <section id="pasta" className="max-w-7xl mx-auto px-6 py-16">
+        <h2 className="text-5xl font-bold text-center text-orange-500 mb-12">
+           PASTA
+        </h2>
+
+        <div
+          className="grid
+grid-cols-1
+sm:grid-cols-2
+lg:grid-cols-3
+gap-6"
+        >
+          {filterItems(pasta).map((item, index) => (
+            <MenuCard
+              key={index}
+              item={item}
+              onAdd={() => {
+                setSelectedItem(item);
+                setAddonModalOpen(true);
+              }}
+            />
+          ))}
+        </div>
+      </section>
+
+      {/* ROLLS */}
+      <section id="rolls" className="max-w-7xl mx-auto px-6 py-16">
+        <h2 className="text-5xl font-bold text-center text-orange-500 mb-12">
+           ROLLS
+        </h2>
+
+        <div
+          className="grid
+grid-cols-1
+sm:grid-cols-2
+lg:grid-cols-4
+gap-6"
+        >
+          {filterItems(rolls).map((item, index) => (
+            <MenuCard
+              key={index}
+              item={item}
+              onAdd={() => {
+                setSelectedItem(item);
+                setAddonModalOpen(true);
+              }}
+            />
+          ))}
+        </div>
+      </section>
+
+      {/* SIDES */}
+      <section id="sides" className="max-w-7xl mx-auto px-6 py-16">
+        <h2 className="text-5xl font-bold text-center text-orange-500 mb-12">
+           SIDES
+        </h2>
+
+        <div
+          className="grid
+grid-cols-1
+sm:grid-cols-2
+lg:grid-cols-3
+gap-6"
+        >
+          {filterItems(sides).map((item, index) => (
+            <MenuCard
+              key={index}
+              item={item}
+              onAdd={() => {
+                setSelectedItem(item);
+                setAddonModalOpen(true);
+              }}
+            />
+          ))}
+        </div>
+      </section>
+
+      <Footer />
+
+      <button
+        onClick={() => setMenuOpen(!menuOpen)}
+        className="
+  fixed
+  bottom-24
+md:bottom-6
+right-4
+md:right-6
+  z-50
+  bg-orange-500
+  hover:bg-orange-600
+  px-6
+  py-4
+  rounded-full
+  shadow-xl
+  font-bold
+  "
+      >
+        ☰ Menu
+      </button>
+      {menuOpen && (
+        <div
+          className="
+fixed
+bottom-24
+right-6
+z-50
+bg-zinc-900
+border
+border-orange-500
+rounded-2xl
+p-5
+w-52
+flex
+flex-col
+gap-4
+shadow-xl
+"
+        >
+          <a href="#burgers" onClick={() => setMenuOpen(false)}>
+             🍔 BURGERS
           </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
+
+          <a href="#pizzas" onClick={() => setMenuOpen(false)}>
+             🍕 PIZZA
+          </a>
+
+          <a href="#maggie" onClick={() => setMenuOpen(false)}>
+             🍜 MAGGIE
+          </a>
+
+          <a href="#pasta" onClick={() => setMenuOpen(false)}>
+             🍝 PASTA
+          </a>
+
+          <a href="#rolls" onClick={() => setMenuOpen(false)}>
+             🌯 ROLLS
+          </a>
+
+          <a href="#sides" onClick={() => setMenuOpen(false)}>
+            🍟 SIDES
           </a>
         </div>
-      </main>
-    </div>
+      )}
+
+      <AddOnModal
+        item={selectedItem}
+        isOpen={addonModalOpen}
+        onClose={() => setAddonModalOpen(false)}
+        onConfirm={(item) => addToCart(item)}
+      />
+
+      <div
+        style={{
+          position: "fixed",
+          top: "-9999px",
+          left: "-9999px",
+          pointerEvents: "none",
+        }}
+      >
+        <Invoice
+          cart={cart}
+          total={cart.reduce(
+            (sum, item) => sum + item.price * item.quantity,
+            0,
+          )}
+          orderNote={orderNote}
+        />
+      </div>
+
+      <CartDrawer
+        isOpen={cartOpen}
+        onClose={() => setCartOpen(false)}
+        cart={cart}
+        clearCart={clearCart}
+        increaseQuantity={increaseQuantity}
+        decreaseQuantity={decreaseQuantity}
+        removeFromCart={removeFromCart}
+        orderNote={orderNote}
+        setOrderNote={setOrderNote}
+        generateInvoice={generateInvoice}
+      />
+    </main>
   );
 }
