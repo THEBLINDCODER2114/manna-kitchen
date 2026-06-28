@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 import Hero from "@/components/Hero";
+import Loader from "@/components/Loader";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import MenuCard from "@/components/MenuCard";
@@ -11,6 +13,7 @@ import Invoice from "@/components/Invoice";
 import { toPng } from "html-to-image";
 
 import { burgers, pizzas, maggie, pasta, rolls, sides } from "@/data/menu";
+import { getMenuItems } from "@/lib/menu";
 
 export default function Home() {
   const [cart, setCart] = useState<any[]>([]);
@@ -21,6 +24,7 @@ export default function Home() {
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [addonModalOpen, setAddonModalOpen] = useState(false);
   const [orderNote, setOrderNote] = useState("");
+  const [loading, setLoading] = useState(true);
 
   const generateInvoice = async () => {
     const node = document.getElementById("invoice");
@@ -56,22 +60,61 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+  async function test() {
+    const { data, error } = await supabase
+      .from("menu_items")
+      .select("*");
+
+    console.log(data);
+    console.log(error);
+  }
+
+  test();
+}, []);
+
+  useEffect(() => {
     localStorage.setItem("manna-cart", JSON.stringify(cart));
   }, [cart]);
 
   const addToCart = (item: any) => {
-    const existingItem = cart.find((cartItem) => cartItem.name === item.name);
+    const existingItem = cart.find((cartItem) => {
+      const sameAddons =
+        JSON.stringify(
+          [...(cartItem.addonsSelected || [])].map((a: any) => a.name).sort(),
+        ) ===
+        JSON.stringify(
+          [...(item.addonsSelected || [])].map((a: any) => a.name).sort(),
+        );
+
+      return (
+        cartItem.name === item.name &&
+        cartItem.bucketType === item.bucketType &&
+        sameAddons
+      );
+    });
 
     if (existingItem) {
       setCart(
-        cart.map((cartItem) =>
-          cartItem.name === item.name
+        cart.map((cartItem) => {
+          const sameAddons =
+            JSON.stringify(
+              [...(cartItem.addonsSelected || [])]
+                .map((a: any) => a.name)
+                .sort(),
+            ) ===
+            JSON.stringify(
+              [...(item.addonsSelected || [])].map((a: any) => a.name).sort(),
+            );
+
+          return cartItem.name === item.name &&
+            cartItem.bucketType === item.bucketType &&
+            sameAddons
             ? {
                 ...cartItem,
                 quantity: cartItem.quantity + 1,
               }
-            : cartItem,
-        ),
+            : cartItem;
+        }),
       );
     } else {
       setCart([
@@ -84,27 +127,42 @@ export default function Home() {
     }
   };
 
-  const increaseQuantity = (name: string) => {
-    setCart(
-      cart.map((item) =>
-        item.name === name ? { ...item, quantity: item.quantity + 1 } : item,
+  const increaseQuantity = (name: string, bucketType?: string) => {
+    setCart((prev) =>
+      prev.map((item) =>
+        item.name === name && item.bucketType === bucketType
+          ? {
+              ...item,
+              quantity: item.quantity + 1,
+            }
+          : item,
       ),
     );
   };
 
-  const decreaseQuantity = (name: string) => {
-    setCart(
-      cart
+  const decreaseQuantity = (name: string, bucketType?: string) => {
+    setCart((prev) =>
+      prev
         .map((item) =>
-          item.name === name ? { ...item, quantity: item.quantity - 1 } : item,
+          item.name === name && item.bucketType === bucketType
+            ? {
+                ...item,
+                quantity: item.quantity - 1,
+              }
+            : item,
         )
         .filter((item) => item.quantity > 0),
     );
   };
 
-  const removeFromCart = (name: string) => {
-    setCart(cart.filter((item) => item.name !== name));
+  const removeFromCart = (name: string, bucketType?: string) => {
+    setCart((prev) =>
+      prev.filter(
+        (item) => !(item.name === name && item.bucketType === bucketType),
+      ),
+    );
   };
+
   const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
   const filterItems = (items: any[]) => {
     if (vegOnly) {
@@ -119,11 +177,24 @@ export default function Home() {
   };
 
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (loading) {
+    return <Loader />;
+  }
   return (
-    <main className="bg-black text-white min-h-screen">
+    <main className="bg-black text-white pt-24">
       <Navbar
         cartCount={cartCount}
         onCartClick={() => setCartOpen(true)}
+        cartOpen={cartOpen}
         vegOnly={vegOnly}
         nonVegOnly={nonVegOnly}
         setVegOnly={setVegOnly}
@@ -135,7 +206,7 @@ export default function Home() {
       {/* BURGERS */}
       <section id="burgers" className="max-w-7xl mx-auto px-6 py-16">
         <h2 className="text-5xl font-bold text-center text-orange-500 mb-12">
-           BURGERS
+          BURGERS
         </h2>
 
         <div
@@ -161,7 +232,7 @@ gap-6"
       {/* PIZZAS */}
       <section id="pizzas" className="max-w-7xl mx-auto px-6 py-16">
         <h2 className="text-5xl font-bold text-center text-orange-500 mb-12">
-           PIZZAS
+          PIZZAS
         </h2>
 
         <div
@@ -187,7 +258,7 @@ gap-6"
       {/* MAGGIE */}
       <section id="maggie" className="max-w-7xl mx-auto px-6 py-16">
         <h2 className="text-5xl font-bold text-center text-orange-500 mb-12">
-           MAGGIE
+          MAGGIE
         </h2>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -207,7 +278,7 @@ gap-6"
       {/* PASTA */}
       <section id="pasta" className="max-w-7xl mx-auto px-6 py-16">
         <h2 className="text-5xl font-bold text-center text-orange-500 mb-12">
-           PASTA
+          PASTA
         </h2>
 
         <div
@@ -233,7 +304,7 @@ gap-6"
       {/* ROLLS */}
       <section id="rolls" className="max-w-7xl mx-auto px-6 py-16">
         <h2 className="text-5xl font-bold text-center text-orange-500 mb-12">
-           ROLLS
+          ROLLS
         </h2>
 
         <div
@@ -259,7 +330,7 @@ gap-6"
       {/* SIDES */}
       <section id="sides" className="max-w-7xl mx-auto px-6 py-16">
         <h2 className="text-5xl font-bold text-center text-orange-500 mb-12">
-           SIDES
+          SIDES
         </h2>
 
         <div
@@ -324,23 +395,23 @@ shadow-xl
 "
         >
           <a href="#burgers" onClick={() => setMenuOpen(false)}>
-             🍔 BURGERS
+            🍔 BURGERS
           </a>
 
           <a href="#pizzas" onClick={() => setMenuOpen(false)}>
-             🍕 PIZZA
+            🍕 PIZZA
           </a>
 
           <a href="#maggie" onClick={() => setMenuOpen(false)}>
-             🍜 MAGGIE
+            🍜 MAGGIE
           </a>
 
           <a href="#pasta" onClick={() => setMenuOpen(false)}>
-             🍝 PASTA
+            🍝 PASTA
           </a>
 
           <a href="#rolls" onClick={() => setMenuOpen(false)}>
-             🌯 ROLLS
+            🌯 ROLLS
           </a>
 
           <a href="#sides" onClick={() => setMenuOpen(false)}>
@@ -374,6 +445,12 @@ shadow-xl
         />
       </div>
 
+      {cartOpen && (
+        <div
+          className="fixed inset-0 bg-black/70 z-[998]"
+          onClick={() => setCartOpen(false)}
+        />
+      )}
       <CartDrawer
         isOpen={cartOpen}
         onClose={() => setCartOpen(false)}

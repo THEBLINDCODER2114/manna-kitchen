@@ -70,7 +70,10 @@ export default function Invoice({ cart, total, orderNote }: Props) {
           {cart.map((item, index) => (
             <tr key={index} className="border-b">
               <td className="p-4">
-                <div className="font-bold text-lg">{item.name}</div>
+                <div className="font-bold text-lg">
+                  {item.name}
+                  {item.bucketType && ` (${item.bucketType})`}
+                </div>
 
                 {item.addonsSelected?.length > 0 && (
                   <div className="mt-2 text-sm">

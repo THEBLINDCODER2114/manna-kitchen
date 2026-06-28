@@ -11,9 +11,11 @@ type Props = {
   onClose: () => void;
   cart: any[];
   clearCart: () => void;
-  increaseQuantity: (name: string) => void;
-  decreaseQuantity: (name: string) => void;
-  removeFromCart: (name: string) => void;
+  increaseQuantity: (name: string, bucketType?: string) => void;
+
+  decreaseQuantity: (name: string, bucketType?: string) => void;
+
+  removeFromCart: (name: string, bucketType?: string) => void;
   orderNote: string;
   setOrderNote: (note: string) => void;
   generateInvoice: () => void;
@@ -39,6 +41,7 @@ export default function CartDrawer({
 ${cart
   .map(
     (item, index) => `${index + 1}. ${item.name}
+${item.bucketType ? ` (${item.bucketType})` : ""}
 Qty: ${item.quantity}
 ${
   item.addonsSelected?.length
@@ -64,7 +67,7 @@ Address:`,
 
   return (
     <div
-      className={`fixed top-0 right-0 h-full w-full sm:w-[420px] bg-zinc-900 border-l border-orange-500 z-50 transform transition-transform duration-300 ${
+      className={`fixed top-0 right-0 h-full w-full md:w-[450px] bg-zinc-900 border-l border-orange-500 z-[999] transform transition-transform duration-300 ${
         isOpen ? "translate-x-0" : "translate-x-full"
       }`}
     >
@@ -101,20 +104,27 @@ Address:`,
 
           {cart.map((item, index) => (
             <div key={index} className="border-b border-zinc-700 pb-3">
-              <p className="font-semibold">{item.name}</p>
+              <p className="font-semibold">
+                {item.name}
+                {item.name === "Chicken Bucket" &&
+                  item.bucketType &&
+                  ` (${item.bucketType})`}
+              </p>
               {item.addonsSelected?.length > 0 && (
                 <div className="mt-1 mb-2">
-                  {item.addonsSelected.map((addon: any, index: number) => (
-                    <p key={index} className="text-sm text-gray-400">
-                      • {addon.name}
-                    </p>
-                  ))}
+                  {item.addonsSelected
+                    .filter((addon: any) => addon.name !== "Upgrade to 6 PCS")
+                    .map((addon: any, index: number) => (
+                      <p key={index} className="text-sm text-gray-400">
+                        • {addon.name}
+                      </p>
+                    ))}
                 </div>
               )}
 
               <div className="flex items-center gap-3 mt-2">
                 <button
-                  onClick={() => decreaseQuantity(item.name)}
+                  onClick={() => decreaseQuantity(item.name, item.bucketType)}
                   className="
 w-10
 h-10
@@ -130,7 +140,7 @@ text-lg
                 <span>{item.quantity}</span>
 
                 <button
-                  onClick={() => increaseQuantity(item.name)}
+                  onClick={() => increaseQuantity(item.name, item.bucketType)}
                   className="
 w-10
 h-10
@@ -147,7 +157,7 @@ text-lg
               <p className="text-orange-400">₹{item.price * item.quantity}</p>
 
               <button
-                onClick={() => removeFromCart(item.name)}
+                onClick={() => removeFromCart(item.name, item.bucketType)}
                 className="mt-2 text-red-500 hover:text-red-400 text-sm font-semibold"
               >
                 🗑 Remove Item
@@ -212,7 +222,7 @@ text-lg
             target="_blank"
             className="block text-center bg-green-500 py-3 rounded-xl font-bold"
           >
-             Place Order
+            Place Order
           </a>
 
           <button

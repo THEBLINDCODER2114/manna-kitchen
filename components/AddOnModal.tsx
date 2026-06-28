@@ -44,14 +44,26 @@ export default function AddOnModal({
     0,
   );
 
-  const basePrice = item.price || item.price4 || 0;
+  const basePrice =
+    item.selectedPrice ||
+    item.price ||
+    (item.bucketSize === "6" ? item.price6 : item.price4) ||
+    0;
 
   const finalPrice = basePrice + addonTotal;
 
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[100]">
       <div className="bg-zinc-900 border border-orange-500 rounded-2xl p-6 w-[90%] max-w-md">
-        <h2 className="text-2xl font-bold mb-4">{item.name}</h2>
+        <div className="mb-4">
+          <h2 className="text-2xl font-bold">{item.name}</h2>
+
+          {item.name === "Chicken Bucket" && (
+            <p className="text-gray-400">
+              {item.bucketSize === "6" ? "6 PCS Bucket" : "4 PCS Bucket"}
+            </p>
+          )}
+        </div>
 
         <p className="text-orange-400 mb-4">Base Price ₹{basePrice}</p>
 
@@ -91,8 +103,17 @@ export default function AddOnModal({
             onClick={() => {
               setAdded(true);
 
+              const upgraded = selectedAddons.some(
+                (addon) => addon.name === "Upgrade to 6 PCS",
+              );
+
               onConfirm({
                 ...item,
+
+                ...(item.name === "Chicken Bucket" && {
+                  bucketType: upgraded ? "6 PCS" : "4 PCS",
+                }),
+
                 addonsSelected: selectedAddons,
                 price: finalPrice,
               });

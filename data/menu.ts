@@ -4,6 +4,8 @@ export const burgers = [
     price: 99,
     image: "/thevegdelight.png",
     type: "veg",
+    description:
+      "Crispy paneer patty layered with fresh veggies, creamy mayo and melted cheese.",
 
     addons: [
       { name: "Extra Cheese", price: 20 },
@@ -64,6 +66,7 @@ export const burgers = [
     price: 139,
     image: "/theogsmashburger.png",
     type: "nonveg",
+     badge: "⭐ BESTSELLER",
 
     addons: [
       { name: "Extra Cheese", price: 20 },
@@ -76,6 +79,7 @@ export const burgers = [
     price: 149,
     image: "/thebreathtaker.png",
     type: "nonveg",
+     badge: "🌶️ SPICY",
 
     addons: [
       { name: "Extra Cheese", price: 20 },
@@ -88,6 +92,7 @@ export const burgers = [
     price: 159,
     image: "/mannamonsterburger.png",
     type: "nonveg",
+     badge: "🆕 NEW",
 
     addons: [
       { name: "Extra Cheese", price: 20 },
@@ -374,14 +379,24 @@ export const sides = [
   },
   {
     name: "Chicken Bucket",
-    price4: 199,
-    price6: 279,
+    price: 199,
+    // price6: 279,
     image: "/chickenbucket.png",
     type: "nonveg",
 
     addons: [
-      { name: "Extra Dip", price: 15 },
-      { name: "Extra Peri Peri ", price: 20 },
+      {
+        name: "Upgrade to 6 PCS",
+        price: 80,
+      },
+      {
+        name: "Extra Dip",
+        price: 15,
+      },
+      {
+        name: "Extra Peri Peri",
+        price: 20,
+      },
     ],
   },
   {

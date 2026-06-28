@@ -1,8 +1,9 @@
-import { FaWhatsapp, FaInstagram } from "react-icons/fa";
+import { FaWhatsapp, FaInstagram, FaShoppingCart } from "react-icons/fa";
 
 type Props = {
   cartCount: number;
   onCartClick: () => void;
+  cartOpen: boolean;
 
   vegOnly: boolean;
   nonVegOnly: boolean;
@@ -11,9 +12,11 @@ type Props = {
   setNonVegOnly: (value: boolean) => void;
 };
 
+import { useEffect, useState } from "react";
 export default function Navbar({
   cartCount,
   onCartClick,
+  cartOpen,
 
   vegOnly,
   nonVegOnly,
@@ -21,8 +24,25 @@ export default function Navbar({
   setVegOnly,
   setNonVegOnly,
 }: Props) {
+  const [animateCart, setAnimateCart] = useState(false);
+
+  useEffect(() => {
+    if (cartCount === 0) return;
+
+    setAnimateCart(true);
+
+    const timer = setTimeout(() => {
+      setAnimateCart(false);
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [cartCount]);
   return (
-    <nav className="sticky top-0 z-50 bg-black/95 backdrop-blur-md border-b border-orange-500">
+    <nav
+      className={`fixed top-0 left-0 w-full z-50 bg-black/95 backdrop-blur-md border-b border-orange-500 ${
+        cartOpen ? "hidden" : ""
+      }`}
+    >
       <div
         className="
   max-w-7xl
@@ -157,9 +177,36 @@ items-center
 gap-2
 "
           >
-            <span className="md:hidden text-lg font-black">🛒 {cartCount}</span>
+            <div className="flex items-center gap-2">
+              <FaShoppingCart
+                className={`transition-transform duration-300 ${
+                  animateCart ? "scale-125" : "scale-100"
+                }`}
+              />
 
-            <span className="hidden md:inline">🛒 Cart ({cartCount})</span>
+              <span className="hidden md:inline">Cart</span>
+
+              <span
+                className={`
+      min-w-6
+      h-6
+      px-2
+      rounded-full
+      flex
+      items-center
+      justify-center
+      bg-orange-500
+      text-white
+      text-xs
+      font-bold
+      transition-all
+      duration-300
+      ${animateCart ? "scale-125 shadow-lg shadow-orange-500" : ""}
+    `}
+              >
+                {cartCount}
+              </span>
+            </div>
           </button>
 
           <a
