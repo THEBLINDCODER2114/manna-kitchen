@@ -8,23 +8,23 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import MenuCard from "@/components/MenuCard";
 import CartDrawer from "@/components/CartDrawer";
+import CheckoutModal from "@/components/CheckoutModal";
 import AddOnModal from "@/components/AddOnModal";
 import Invoice from "@/components/Invoice";
 import { toPng } from "html-to-image";
 
-import { burgers, pizzas, maggie, pasta, rolls, sides } from "@/data/menu";
 import { getMenuItems } from "@/lib/menu";
 
 export default function Home() {
   const [cart, setCart] = useState<any[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [vegOnly, setVegOnly] = useState(false);
   const [nonVegOnly, setNonVegOnly] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<any>(null);
-  const [addonModalOpen, setAddonModalOpen] = useState(false);
   const [orderNote, setOrderNote] = useState("");
   const [loading, setLoading] = useState(true);
+  const [menuItems, setMenuItems] = useState<any[]>([]);
 
   const generateInvoice = async () => {
     const node = document.getElementById("invoice");
@@ -59,17 +59,34 @@ export default function Home() {
     }
   }, []);
 
+  async function loadMenu() {
+  const data = await getMenuItems();
+  setMenuItems(data);
+}
   useEffect(() => {
-  async function test() {
-    const { data, error } = await supabase
-      .from("menu_items")
-      .select("*");
+  loadMenu();
 
-    console.log(data);
-    console.log(error);
+  const channel = supabase
+    .channel("customer-menu")
+    .on(
+  "postgres_changes",
+  {
+    event: "*",
+    schema: "public",
+    table: "menu_items",
+  },
+  (payload) => {
+    console.log("Realtime menu event:", payload);
+    loadMenu();
   }
+)
+    .subscribe((status) => {
+  console.log("Customer Realtime:", status);
+});
 
-  test();
+  return () => {
+    supabase.removeChannel(channel);
+  };
 }, []);
 
   useEffect(() => {
@@ -121,16 +138,17 @@ export default function Home() {
         ...cart,
         {
           ...item,
+          cartId: crypto.randomUUID(),
           quantity: 1,
         },
       ]);
     }
   };
 
-  const increaseQuantity = (name: string, bucketType?: string) => {
+  const increaseQuantity = (cartId: string) => {
     setCart((prev) =>
       prev.map((item) =>
-        item.name === name && item.bucketType === bucketType
+        item.cartId === cartId
           ? {
               ...item,
               quantity: item.quantity + 1,
@@ -140,11 +158,11 @@ export default function Home() {
     );
   };
 
-  const decreaseQuantity = (name: string, bucketType?: string) => {
+  const decreaseQuantity = (cartId: string) => {
     setCart((prev) =>
       prev
         .map((item) =>
-          item.name === name && item.bucketType === bucketType
+          item.cartId === cartId
             ? {
                 ...item,
                 quantity: item.quantity - 1,
@@ -155,12 +173,8 @@ export default function Home() {
     );
   };
 
-  const removeFromCart = (name: string, bucketType?: string) => {
-    setCart((prev) =>
-      prev.filter(
-        (item) => !(item.name === name && item.bucketType === bucketType),
-      ),
-    );
+  const removeFromCart = (cartId: string) => {
+    setCart((prev) => prev.filter((item) => item.cartId !== cartId));
   };
 
   const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
@@ -175,6 +189,30 @@ export default function Home() {
 
     return items;
   };
+
+  const burgers = filterItems(
+    menuItems.filter((item) => item.category === "Burgers"),
+  );
+
+  const pizzas = filterItems(
+    menuItems.filter((item) => item.category === "Pizza"),
+  );
+
+  const maggie = filterItems(
+    menuItems.filter((item) => item.category === "Maggie"),
+  );
+
+  const pasta = filterItems(
+    menuItems.filter((item) => item.category === "Pasta"),
+  );
+
+  const rolls = filterItems(
+    menuItems.filter((item) => item.category === "Rolls"),
+  );
+
+  const sides = filterItems(
+    menuItems.filter((item) => item.category === "Sides"),
+  );
 
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
@@ -216,15 +254,8 @@ sm:grid-cols-2
 lg:grid-cols-3
 gap-6"
         >
-          {filterItems(burgers).map((item, index) => (
-            <MenuCard
-              key={index}
-              item={item}
-              onAdd={() => {
-                setSelectedItem(item);
-                setAddonModalOpen(true);
-              }}
-            />
+          {filterItems(burgers).map((item) => (
+            <MenuCard key={item.id} item={item} onAdd={addToCart} />
           ))}
         </div>
       </section>
@@ -242,15 +273,8 @@ sm:grid-cols-2
 lg:grid-cols-3
 gap-6"
         >
-          {filterItems(pizzas).map((item, index) => (
-            <MenuCard
-              key={index}
-              item={item}
-              onAdd={() => {
-                setSelectedItem(item);
-                setAddonModalOpen(true);
-              }}
-            />
+          {filterItems(pizzas).map((item) => (
+            <MenuCard key={item.id} item={item} onAdd={addToCart} />
           ))}
         </div>
       </section>
@@ -262,15 +286,8 @@ gap-6"
         </h2>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {filterItems(maggie).map((item, index) => (
-            <MenuCard
-              key={index}
-              item={item}
-              onAdd={() => {
-                setSelectedItem(item);
-                setAddonModalOpen(true);
-              }}
-            />
+          {filterItems(maggie).map((item) => (
+            <MenuCard key={item.id} item={item} onAdd={addToCart} />
           ))}
         </div>
       </section>
@@ -288,15 +305,8 @@ sm:grid-cols-2
 lg:grid-cols-3
 gap-6"
         >
-          {filterItems(pasta).map((item, index) => (
-            <MenuCard
-              key={index}
-              item={item}
-              onAdd={() => {
-                setSelectedItem(item);
-                setAddonModalOpen(true);
-              }}
-            />
+          {filterItems(pasta).map((item) => (
+            <MenuCard key={item.id} item={item} onAdd={addToCart} />
           ))}
         </div>
       </section>
@@ -314,15 +324,8 @@ sm:grid-cols-2
 lg:grid-cols-4
 gap-6"
         >
-          {filterItems(rolls).map((item, index) => (
-            <MenuCard
-              key={index}
-              item={item}
-              onAdd={() => {
-                setSelectedItem(item);
-                setAddonModalOpen(true);
-              }}
-            />
+          {filterItems(rolls).map((item) => (
+            <MenuCard key={item.id} item={item} onAdd={addToCart} />
           ))}
         </div>
       </section>
@@ -340,15 +343,8 @@ sm:grid-cols-2
 lg:grid-cols-3
 gap-6"
         >
-          {filterItems(sides).map((item, index) => (
-            <MenuCard
-              key={index}
-              item={item}
-              onAdd={() => {
-                setSelectedItem(item);
-                setAddonModalOpen(true);
-              }}
-            />
+          {filterItems(sides).map((item) => (
+            <MenuCard key={item.id} item={item} onAdd={addToCart} />
           ))}
         </div>
       </section>
@@ -420,13 +416,6 @@ shadow-xl
         </div>
       )}
 
-      <AddOnModal
-        item={selectedItem}
-        isOpen={addonModalOpen}
-        onClose={() => setAddonModalOpen(false)}
-        onConfirm={(item) => addToCart(item)}
-      />
-
       <div
         style={{
           position: "fixed",
@@ -462,6 +451,19 @@ shadow-xl
         orderNote={orderNote}
         setOrderNote={setOrderNote}
         generateInvoice={generateInvoice}
+        openCheckout={() => setCheckoutOpen(true)}
+        closeCart={() => setCartOpen(false)}
+      />
+
+      <CheckoutModal
+        isOpen={checkoutOpen}
+        onClose={() => setCheckoutOpen(false)}
+        cart={cart}
+        orderNote={orderNote}
+        onOrderPlaced={() => {
+          clearCart();
+          setCheckoutOpen(false);
+        }}
       />
     </main>
   );

@@ -1,5 +1,6 @@
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminNavbar from "@/components/admin/AdminNavbar";
+import AdminRealtime from "@/components/admin/AdminRealtime";
 
 export default function AdminLayout({
   children,
@@ -12,7 +13,7 @@ export default function AdminLayout({
 
       <div className="ml-72">
         <AdminNavbar />
-
+        <AdminRealtime />
         <main
           className="
           pt-20

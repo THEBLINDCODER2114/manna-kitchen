@@ -1,10 +1,15 @@
+import { useState } from "react";
+import AddOnModal from "./AddOnModal";
+
 type Props = {
   item: any;
   onClose: () => void;
-  onAdd: () => void;
+  onAdd: (item: any) => void;
 };
 
 export default function ProductModal({ item, onClose, onAdd }: Props) {
+  const [showAddOnModal, setShowAddOnModal] = useState(false);
+
   if (!item) return null;
 
   return (
@@ -64,7 +69,7 @@ export default function ProductModal({ item, onClose, onAdd }: Props) {
           ✕
         </button>
 
-        <div className="p-6">
+        <div className="p-6"> 
           <div className="flex items-center gap-3 mb-3">
             {item.type === "veg" ? (
               <span className="bg-green-900 px-3 py-1 rounded-full text-sm font-bold">
@@ -100,7 +105,7 @@ export default function ProductModal({ item, onClose, onAdd }: Props) {
           </p>
 
           <button
-            onClick={onAdd}
+            onClick={() => setShowAddOnModal(true)}
             className="
             w-full
             mt-6
@@ -117,6 +122,16 @@ export default function ProductModal({ item, onClose, onAdd }: Props) {
           </button>
         </div>
       </div>
+      <AddOnModal
+        item={item}
+        isOpen={showAddOnModal}
+        onClose={() => setShowAddOnModal(false)}
+        onConfirm={(updatedItem) => {
+          setShowAddOnModal(false);
+          onAdd(updatedItem);
+          onClose();
+        }}
+      />
     </div>
   );
 }

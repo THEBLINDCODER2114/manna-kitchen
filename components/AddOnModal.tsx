@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { getAddons } from "@/lib/addons";
 
 type Addon = {
   name: string;
@@ -20,11 +21,23 @@ export default function AddOnModal({
   onClose,
   onConfirm,
 }: Props) {
+  const [addons, setAddons] = useState<Addon[]>([]);
   const [selectedAddons, setSelectedAddons] = useState<Addon[]>([]);
   const [added, setAdded] = useState(false);
 
   useEffect(() => {
-    setSelectedAddons([]);
+    async function loadAddons() {
+      if (!item) return;
+
+      const data = await getAddons(item.id);
+
+      console.log("Loaded Addons:", data);
+
+      setAddons(data);
+      setSelectedAddons([]);
+    }
+
+    loadAddons();
   }, [item]);
 
   if (!isOpen || !item) return null;
@@ -68,7 +81,7 @@ export default function AddOnModal({
         <p className="text-orange-400 mb-4">Base Price ₹{basePrice}</p>
 
         <div className="space-y-3">
-          {item.addons?.map((addon: Addon, index: number) => (
+          {addons.map((addon: Addon, index: number) => (
             <label key={index} className="flex justify-between items-center">
               <div>
                 <input

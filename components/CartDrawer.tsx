@@ -11,14 +11,14 @@ type Props = {
   onClose: () => void;
   cart: any[];
   clearCart: () => void;
-  increaseQuantity: (name: string, bucketType?: string) => void;
-
-  decreaseQuantity: (name: string, bucketType?: string) => void;
-
-  removeFromCart: (name: string, bucketType?: string) => void;
+  increaseQuantity: (cartId: string) => void;
+  decreaseQuantity: (cartId: string) => void;
+  removeFromCart: (cartId: string) => void;
   orderNote: string;
   setOrderNote: (note: string) => void;
   generateInvoice: () => void;
+  openCheckout: () => void;
+  closeCart: () => void;
 };
 
 export default function CartDrawer({
@@ -32,6 +32,8 @@ export default function CartDrawer({
   orderNote,
   setOrderNote,
   generateInvoice,
+  openCheckout,
+  closeCart,
 }: Props) {
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
@@ -124,7 +126,7 @@ Address:`,
 
               <div className="flex items-center gap-3 mt-2">
                 <button
-                  onClick={() => decreaseQuantity(item.name, item.bucketType)}
+                  onClick={() => decreaseQuantity(item.cartId)}
                   className="
 w-10
 h-10
@@ -140,7 +142,7 @@ text-lg
                 <span>{item.quantity}</span>
 
                 <button
-                  onClick={() => increaseQuantity(item.name, item.bucketType)}
+                  onClick={() => increaseQuantity(item.cartId)}
                   className="
 w-10
 h-10
@@ -157,7 +159,7 @@ text-lg
               <p className="text-orange-400">₹{item.price * item.quantity}</p>
 
               <button
-                onClick={() => removeFromCart(item.name, item.bucketType)}
+                onClick={() => removeFromCart(item.cartId)}
                 className="mt-2 text-red-500 hover:text-red-400 text-sm font-semibold"
               >
                 🗑 Remove Item
@@ -217,13 +219,23 @@ text-lg
             📄 Download Bill
           </button>
 
-          <a
+          {/* <a
             href={`https://wa.me/917045202965?text=${whatsappMessage}`}
             target="_blank"
             className="block text-center bg-green-500 py-3 rounded-xl font-bold"
           >
             Place Order
-          </a>
+          </a> */}
+
+          <button
+            onClick={() => {
+              closeCart();
+              openCheckout();
+            }}
+            className="w-full bg-green-500 py-3 rounded-xl font-bold"
+          >
+            Continue Checkout
+          </button>
 
           <button
             onClick={clearCart}

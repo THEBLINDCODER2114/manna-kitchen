@@ -10,9 +10,15 @@ type Props = {
   isOpen: boolean;
   onClose: () => void;
   editingItem: any;
+  onSaved: () => void;
 };
 
-export default function AddItemModal({ isOpen, onClose, editingItem }: Props) {
+export default function AddItemModal({
+  isOpen,
+  onClose,
+  editingItem,
+  onSaved,
+}: Props) {
   const [categories, setCategories] = useState<any[]>([]);
   const [form, setForm] = useState({
     name: "",
@@ -119,9 +125,10 @@ export default function AddItemModal({ isOpen, onClose, editingItem }: Props) {
           price: "",
         },
       ]);
-      onClose();
 
-      window.location.reload();
+      resetForm();
+      onClose();
+      onSaved();
     } catch (err) {
       console.error(err);
     }

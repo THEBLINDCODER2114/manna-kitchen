@@ -3,22 +3,30 @@ import { supabase } from "./supabase";
 export async function getAllOrders() {
   const { data, error } = await supabase
     .from("orders")
-    .select(`
+    .select(
+      `
       *,
       customers (
-        full_name,
-        phone,
-        address
-      ),
+  full_name,
+  phone,
+  address,
+  landmark,
+  latitude,
+  longitude
+),
       order_items (
-        quantity,
-        price,
-        menu_items (
-          name,
-          image
-        )
-      )
-    `)
+  id,
+  quantity,
+  price,
+  bucket_type,
+  addons,
+  menu_items (
+    name,
+    image
+  )
+)
+    `,
+    )
     .order("created_at", { ascending: false });
 
   if (error) {

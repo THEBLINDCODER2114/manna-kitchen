@@ -17,13 +17,13 @@ export default function MenuPage() {
   const [editingItem, setEditingItem] = useState<any>(null);
   const [deleteItem, setDeleteItem] = useState<any>(null);
 
-  useEffect(() => {
-    async function loadMenu() {
-      const data = await getAllMenuItems();
-      setMenu(data);
-      setLoading(false);
-    }
+  async function loadMenu() {
+    const data = await getAllMenuItems();
+    setMenu(data);
+    setLoading(false);
+  }
 
+  useEffect(() => {
     loadMenu();
   }, []);
 
@@ -159,11 +159,14 @@ export default function MenuPage() {
 
       <AddItemModal
         isOpen={showAddModal}
+        editingItem={editingItem}
         onClose={() => {
           setShowAddModal(false);
           setEditingItem(null);
         }}
-        editingItem={editingItem}
+        onSaved={async () => {
+          await loadMenu();
+        }}
       />
 
       <DeleteItemModal
