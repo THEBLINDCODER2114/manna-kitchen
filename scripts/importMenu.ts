@@ -6,14 +6,7 @@ dotenv.config({
 
 import { createClient } from "@supabase/supabase-js";
 
-import {
-  burgers,
-  pizzas,
-  pasta,
-  maggie,
-  rolls,
-  sides,
-} from "../data/menu";
+import { burgers, pizzas, pasta, maggie, rolls, sides } from "../data/menu";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -63,8 +56,8 @@ async function importMenu() {
             category_id: existingCategory.id,
             category: category.name,
             name: item.name,
-            description: item.description || "",
-            badge: item.badge || "",
+            description: "",
+            badge: "",
             image: item.image,
             type: item.type,
             price: item.price,
