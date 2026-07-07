@@ -5,7 +5,7 @@ export const burgers = [
     image: "/thevegdelight.png",
     type: "veg",
     description:
-      "Crispy paneer patty layered with fresh veggies, creamy mayo and melted cheese.",
+      "A golden crispy veg patty layered with fresh veggies, creamy signature sauce, and toasted perfection in every irresistible bite.",
 
     addons: [
       { name: "Extra Cheese", price: 20 },
@@ -18,6 +18,7 @@ export const burgers = [
     price: 109,
     image: "/paneercrunch.png",
     type: "veg",
+    description: "Crunch into crispy golden paneer, crisp lettuce, and smoky tandoori mayo, all hugged by a soft toasted bun.",
 
     addons: [
       { name: "Extra Cheese", price: 20 },
@@ -30,6 +31,7 @@ export const burgers = [
     price: 119,
     image: "/cheesyvegstack.png",
     type: "veg",
+    description: "",
 
     addons: [
       { name: "Extra Cheese", price: 20 },
@@ -42,6 +44,7 @@ export const burgers = [
     price: 109,
     image: "/mannaclassicburger.png",
     type: "nonveg",
+    description: "",
 
     addons: [
       { name: "Extra Cheese", price: 20 },
@@ -54,6 +57,7 @@ export const burgers = [
     price: 119,
     image: "/thedopaminehit.png",
     type: "nonveg",
+    description: "",
 
     addons: [
       { name: "Extra Cheese", price: 20 },
@@ -66,7 +70,8 @@ export const burgers = [
     price: 139,
     image: "/theogsmashburger.png",
     type: "nonveg",
-     badge: "⭐ BESTSELLER",
+    description: "",
+    badge: "⭐ BESTSELLER",
 
     addons: [
       { name: "Extra Cheese", price: 20 },
@@ -79,7 +84,8 @@ export const burgers = [
     price: 149,
     image: "/thebreathtaker.png",
     type: "nonveg",
-     badge: "🌶️ SPICY",
+    description: "",
+    badge: "🌶️ SPICY",
 
     addons: [
       { name: "Extra Cheese", price: 20 },
@@ -92,7 +98,8 @@ export const burgers = [
     price: 159,
     image: "/mannamonsterburger.png",
     type: "nonveg",
-     badge: "🆕 NEW",
+    description: "",
+    badge: "🆕 NEW",
 
     addons: [
       { name: "Extra Cheese", price: 20 },
@@ -108,6 +115,7 @@ export const pizzas = [
     price: 149,
     image: "/mannaclassicmargherita.png",
     type: "veg",
+    description: "",
 
     addons: [
       { name: "Extra Cheese", price: 30 },
@@ -120,6 +128,7 @@ export const pizzas = [
     price: 169,
     image: "/doublecheesemargherita.png",
     type: "veg",
+    description: "",
 
     addons: [
       { name: "Extra Cheese", price: 30 },
@@ -132,6 +141,7 @@ export const pizzas = [
     price: 179,
     image: "/theroyalfarmhouse.png",
     type: "veg",
+    description: "",
 
     addons: [
       { name: "Extra Cheese", price: 30 },
@@ -144,6 +154,7 @@ export const pizzas = [
     price: 199,
     image: "/mannachickenpop.png",
     type: "nonveg",
+    description: "",
 
     addons: [
       { name: "Extra Cheese", price: 30 },
@@ -156,7 +167,7 @@ export const pizzas = [
     price: 219,
     image: "/mannabbqpizza.png",
     type: "nonveg",
-
+    description: "",
     addons: [
       { name: "Extra Cheese", price: 30 },
       { name: "Extra Chicken", price: 50 },
@@ -168,7 +179,7 @@ export const pizzas = [
     price: 249,
     image: "/mannaultimatefeast.png",
     type: "nonveg",
-
+    description: "",
     addons: [
       { name: "Extra Cheese", price: 30 },
       { name: "Extra Chicken", price: 50 },
@@ -183,6 +194,7 @@ export const maggie = [
     price: 49,
     image: "/mannaclassicmaggie.png",
     type: "veg",
+    description: "",
 
     addons: [{ name: "Extra Cheese", price: 10 }],
   },
@@ -191,6 +203,7 @@ export const maggie = [
     price: 59,
     image: "/themidnightmelt.png",
     type: "veg",
+    description: "",
 
     addons: [{ name: "Extra Cheese", price: 10 }],
   },
@@ -199,6 +212,7 @@ export const maggie = [
     price: 69,
     image: "/dynamitemanna.png",
     type: "veg",
+    description: "",
 
     addons: [{ name: "Extra Cheese", price: 10 }],
   },
@@ -207,6 +221,7 @@ export const maggie = [
     price: 99,
     image: "/themannaspecial.png",
     type: "nonveg",
+    description: "",
 
     addons: [
       { name: "Extra Cheese", price: 10 },
@@ -221,6 +236,7 @@ export const pasta = [
     price: 149,
     image: "/creamyalfredo.png",
     type: "veg",
+    description: "",
 
     addons: [
       { name: "Extra Cheese", price: 20 },
@@ -232,6 +248,7 @@ export const pasta = [
     price: 159,
     image: "/rosedelight.png",
     type: "veg",
+    description: "",
 
     addons: [
       { name: "Extra Cheese", price: 20 },
@@ -243,6 +260,7 @@ export const pasta = [
     price: 169,
     image: "/arrabbiata.png",
     type: "veg",
+    description: "",
 
     addons: [
       { name: "Extra Cheese", price: 20 },
@@ -254,6 +272,7 @@ export const pasta = [
     price: 179,
     image: "/thesnowcap.png",
     type: "nonveg",
+    description: "",
 
     addons: [
       { name: "Extra Cheese", price: 20 },
@@ -265,6 +284,7 @@ export const pasta = [
     price: 189,
     image: "/cremarosa.png",
     type: "nonveg",
+    description: "",
 
     addons: [
       { name: "Extra Cheese", price: 20 },
@@ -276,6 +296,7 @@ export const pasta = [
     price: 199,
     image: "/thefirecracker.png",
     type: "nonveg",
+    description: "",
 
     addons: [
       { name: "Extra Cheese", price: 20 },
@@ -290,6 +311,7 @@ export const rolls = [
     price: 69,
     image: "/vegroll.png",
     type: "veg",
+    description: "",
 
     addons: [
       { name: "Extra Mayo", price: 10 },
@@ -302,6 +324,7 @@ export const rolls = [
     price: 99,
     image: "/chickenroll.png",
     type: "nonveg",
+    description: "",
 
     addons: [
       { name: "Extra Mayo", price: 10 },
@@ -314,6 +337,7 @@ export const rolls = [
     price: 119,
     image: "/crispychickenroll.png",
     type: "nonveg",
+    description: "",
 
     addons: [
       { name: "Extra Mayo", price: 10 },
@@ -326,6 +350,7 @@ export const rolls = [
     price: 139,
     image: "/malabarporotaroll.png",
     type: "nonveg",
+    description: "",
 
     addons: [
       { name: "Extra Mayo", price: 10 },
@@ -341,6 +366,7 @@ export const sides = [
     price: 69,
     image: "/mannaclassicfries.png",
     type: "veg",
+    description: "",
 
     addons: [{ name: "Extra Dip", price: 15 }],
   },
@@ -349,6 +375,7 @@ export const sides = [
     price: 89,
     image: "/periperifries.png",
     type: "veg",
+    description: "",
 
     addons: [
       { name: "Extra Dip", price: 15 },
@@ -360,6 +387,7 @@ export const sides = [
     price: 109,
     image: "/cheesyloadedfries.png",
     type: "veg",
+    description: "",
 
     addons: [
       { name: "Extra Cheese", price: 20 },
@@ -371,6 +399,7 @@ export const sides = [
     price: 99,
     image: "/chickenpopcorn.png",
     type: "nonveg",
+    description: "",
 
     addons: [
       { name: "Extra Dip", price: 15 },
@@ -383,6 +412,7 @@ export const sides = [
     // price6: 279,
     image: "/chickenbucket.png",
     type: "nonveg",
+    description: "",
 
     addons: [
       {
@@ -404,7 +434,7 @@ export const sides = [
     price: 159,
     image: "/jungleloadedfries.png",
     type: "nonveg",
-
+    description: "",
     addons: [
       { name: "Extra Sauce", price: 10 },
       { name: "Extra Cheese", price: 20 },

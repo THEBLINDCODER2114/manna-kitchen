@@ -45,8 +45,9 @@ export default function AdminSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside
-      className="
+    <>
+      <aside
+        className="
     fixed
     left-0
     top-0
@@ -58,19 +59,19 @@ export default function AdminSidebar() {
     z-50
     overflow-y-auto
   "
-    >
-      <div className="p-8">
-        <h1 className="text-3xl font-black text-orange-500">MANNA KITCHEN</h1>
+      >
+        <div className="p-8">
+          <h1 className="text-3xl font-black text-orange-500">MANNA KITCHEN</h1>
 
-        <p className="text-gray-500">Admin Dashboard</p>
-      </div>
+          <p className="text-gray-500">Admin Dashboard</p>
+        </div>
 
-      <nav className="px-4 space-y-2">
-        {menuItems.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={`
+        <nav className="px-4 space-y-2">
+          {menuItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`
               flex
               items-center
               gap-4
@@ -85,13 +86,14 @@ export default function AdminSidebar() {
                   : "hover:bg-zinc-900"
               }
             `}
-          >
-            <span className="text-xl">{item.icon}</span>
+            >
+              <span className="text-xl">{item.icon}</span>
 
-            {item.name}
-          </Link>
-        ))}
-      </nav>
-    </aside>
+              {item.name}
+            </Link>
+          ))}
+        </nav>
+      </aside>
+    </>
   );
 }

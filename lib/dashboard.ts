@@ -1,14 +1,11 @@
 import { supabase } from "./supabase";
 
 export async function getDashboardStats() {
-  const now = new Date();
+  const startOfToday = new Date();
+startOfToday.setHours(0, 0, 0, 0);
 
-const today =
-  now.getFullYear() +
-  "-" +
-  String(now.getMonth() + 1).padStart(2, "0") +
-  "-" +
-  String(now.getDate()).padStart(2, "0");
+const endOfToday = new Date();
+endOfToday.setHours(23, 59, 59, 999);
 
   const [
     { count: menuCount },
@@ -20,21 +17,21 @@ const today =
     supabase
       .from("customers")
       .select("*", { count: "exact", head: true })
-      .gte("created_at", `${today}T00:00:00`)
-      .lte("created_at", `${today}T23:59:59`),
+      .gte("created_at", startOfToday.toISOString())
+.lte("created_at", endOfToday.toISOString()),
 
     supabase
       .from("orders")
       .select("*", { count: "exact", head: true })
-      .gte("created_at", `${today}T00:00:00`)
-      .lte("created_at", `${today}T23:59:59`),
+      .gte("created_at", startOfToday.toISOString())
+.lte("created_at", endOfToday.toISOString()),
   ]);
 
   const { data: orders } = await supabase
-    .from("orders")
-    .select("total, status")
-    .gte("created_at", `${today}T00:00:00`)
-    .lte("created_at", `${today}T23:59:59`);
+  .from("orders")
+  .select("total, status")
+  .gte("created_at", startOfToday.toISOString())
+.lte("created_at", endOfToday.toISOString());
 
   const totalSales =
     orders?.reduce(

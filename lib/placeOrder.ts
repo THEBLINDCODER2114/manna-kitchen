@@ -13,6 +13,11 @@ type PlaceOrderData = {
 
 export async function placeOrder(data: PlaceOrderData) {
   try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    console.log("Current session:", session);
     // Save Customer
     const { data: customer, error: customerError } = await supabase
       .from("customers")
@@ -24,7 +29,10 @@ export async function placeOrder(data: PlaceOrderData) {
       })
       .select()
       .single();
-
+    if (customerError) {
+      console.error("CUSTOMER ERROR:", customerError);
+      throw customerError;
+    }
     if (customerError) throw customerError;
     // Save Order
     const { data: order, error: orderError } = await supabase
@@ -40,7 +48,10 @@ export async function placeOrder(data: PlaceOrderData) {
       })
       .select()
       .single();
-
+    if (orderError) {
+      console.error("ORDER ERROR:", orderError);
+      throw orderError;
+    }
     if (orderError) throw orderError;
     const orderItems = data.cart.map((item) => ({
       order_id: order.id,
@@ -58,10 +69,10 @@ export async function placeOrder(data: PlaceOrderData) {
     if (orderItemsError) throw orderItemsError;
 
     return {
-  success: true,
-};
+      success: true,
+    };
   } catch (error) {
-    console.error(error);
+    console.error("PLACE ORDER ERROR:", JSON.stringify(error, null, 2));
 
     return {
       success: false,

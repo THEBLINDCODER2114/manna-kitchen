@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { getAllOrders } from "@/lib/orders";
 import OrderCard from "@/components/admin/OrderCard";
+import { supabase } from "@/lib/supabase";
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
@@ -30,22 +31,14 @@ export default function OrdersPage() {
 
   setOrders(data);
 
-  setNewOrders((prev) => {
-    const updated = prev.includes(orderId)
-      ? prev
-      : [...prev, orderId];
-
-    console.log("newOrders will become:", updated);
-
-    return updated;
-  });
+  setNewOrders([orderId]);
 };
 
     window.addEventListener("new-order", handleNewOrder);
 
-    return () => {
-      window.removeEventListener("new-order", handleNewOrder);
-    };
+   return () => {
+  window.removeEventListener("new-order", handleNewOrder);
+};
   }, []);
 
   if (loading) {
