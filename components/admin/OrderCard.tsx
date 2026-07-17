@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { updateOrderStatus } from "@/lib/updateOrderStatus";
+import { updatePaymentStatus } from "@/lib/updatePaymentStatus";
 import { getWhatsappMessage } from "@/lib/getWhatsappMessage";
 
 type Props = {
@@ -37,6 +38,7 @@ const statusFlow: Record<
 
 export default function OrderCard({ order, isNew, onStatusChange }: Props) {
   const [updating, setUpdating] = useState(false);
+  const [updatingPayment, setUpdatingPayment] = useState(false);
   const whatsappMessage = getWhatsappMessage(order, order.status);
 
   const phone = `91${(order.customers?.phone ?? "").replace(/\D/g, "")}`;
@@ -181,6 +183,38 @@ export default function OrderCard({ order, isNew, onStatusChange }: Props) {
         </div>
       </div>
 
+      {/* Payment */}
+
+      <div className="mt-6 bg-zinc-800 rounded-2xl p-5">
+        <h3 className="text-lg font-bold mb-4">💳 Payment</h3>
+
+        <div className="flex justify-between items-center">
+          <span className="text-gray-400">Method</span>
+
+          <span className="font-semibold">
+            {order.payment_method === "ONLINE"
+              ? "💳 Online"
+              : "💵 Cash on Delivery"}
+          </span>
+        </div>
+
+        <div className="flex justify-between items-center mt-4">
+          <span className="text-gray-400">Status</span>
+
+          <span
+            className={`px-3 py-1 rounded-full text-sm font-bold ${
+              order.payment_status === "Paid"
+                ? "bg-green-600 text-white"
+                : order.payment_status === "Pending"
+                  ? "bg-yellow-500 text-black"
+                  : "bg-red-600 text-white"
+            }`}
+          >
+            {order.payment_status}
+          </span>
+        </div>
+      </div>
+
       {/* Items */}
 
       <div className="mt-6 space-y-2">
@@ -224,6 +258,26 @@ export default function OrderCard({ order, isNew, onStatusChange }: Props) {
         <h2 className="text-2xl font-black">₹{order.total}</h2>
 
         <div className="flex gap-3">
+          {order.payment_method === "COD" &&
+            order.payment_status === "Pending" && (
+              <button
+                disabled={updatingPayment}
+                onClick={async () => {
+                  setUpdatingPayment(true);
+
+                  const success = await updatePaymentStatus(order.id, "Paid");
+
+                  if (success) {
+                    order.payment_status = "Paid";
+                  }
+
+                  setUpdatingPayment(false);
+                }}
+                className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 px-5 py-3 rounded-xl font-bold"
+              >
+                {updatingPayment ? "Updating..." : "💵 Mark COD as Paid"}
+              </button>
+            )}
           {order.status === "Pending" && (
             <>
               <button

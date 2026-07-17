@@ -1,6 +1,7 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import { Toaster } from "sonner";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   title: "MANNA KITCHEN",
@@ -34,6 +35,10 @@ export default function RootLayout({
       <body>
         {children}
         <Toaster position="top-right" richColors closeButton />
+        <Script
+          src="https://checkout.razorpay.com/v1/checkout.js"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { placeOrder } from "@/lib/placeOrder";
+import { payOnline } from "@/lib/payOnline";
 import { toast } from "sonner";
 
 type Props = {
@@ -23,36 +24,65 @@ export default function CheckoutModal({
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
   const [customerLandmark, setCustomerLandmark] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<"COD" | "ONLINE">("COD");
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
   const handlePlaceOrder = async () => {
     if (!customerName || !customerPhone || !customerAddress) {
       alert("Please fill all required fields.");
       return;
     }
 
-    const result = await placeOrder({
+    // CASH ON DELIVERY
+    if (paymentMethod === "COD") {
+      const result = await placeOrder({
+        customerName,
+        customerPhone,
+        customerAddress,
+        customerLandmark,
+        orderNote,
+        cart,
+      });
+
+      if (!result.success) {
+        toast.error(result.error || "Failed to place order");
+        return;
+      }
+
+      toast.success("🎉 Order Placed Successfully!");
+
+      setCustomerName("");
+      setCustomerPhone("");
+      setCustomerAddress("");
+      setCustomerLandmark("");
+
+      onOrderPlaced();
+      onClose();
+
+      return;
+    }
+
+    // ONLINE PAYMENT
+    await payOnline({
       customerName,
       customerPhone,
       customerAddress,
       customerLandmark,
       orderNote,
       cart,
+
+      onSuccess: () => {
+        toast.success("🎉 Payment Successful!");
+
+        setCustomerName("");
+        setCustomerPhone("");
+        setCustomerAddress("");
+        setCustomerLandmark("");
+
+        onOrderPlaced();
+        onClose();
+      },
     });
-
-    if (!result.success) {
-      toast.error("Failed to place order.");
-      return;
-    }
-
-    toast.success("🎉 Order Placed Successfully!");
-
-    setCustomerName("");
-    setCustomerPhone("");
-    setCustomerAddress("");
-    setCustomerLandmark("");
-
-    onOrderPlaced();
-    onClose();
   };
 
   if (!isOpen) return null;
@@ -135,6 +165,44 @@ export default function CheckoutModal({
           </div>
         </div>
 
+        <div className="mt-8">
+          <h3 className="text-xl font-bold text-orange-400 mb-4">
+            💳 Payment Method
+          </h3>
+
+          <div className="space-y-3">
+            <label className="flex items-center gap-3 bg-zinc-800 p-4 rounded-xl cursor-pointer border border-zinc-700">
+              <input
+                type="radio"
+                checked={paymentMethod === "COD"}
+                onChange={() => setPaymentMethod("COD")}
+              />
+
+              <div>
+                <p className="font-semibold">Cash on Delivery</p>
+                <p className="text-sm text-gray-400">
+                  Pay when your order arrives.
+                </p>
+              </div>
+            </label>
+
+            <label className="flex items-center gap-3 bg-zinc-800 p-4 rounded-xl cursor-pointer border border-zinc-700">
+              <input
+                type="radio"
+                checked={paymentMethod === "ONLINE"}
+                onChange={() => setPaymentMethod("ONLINE")}
+              />
+
+              <div>
+                <p className="font-semibold">Pay Online</p>
+                <p className="text-sm text-gray-400">
+                  UPI • Cards • Net Banking
+                </p>
+              </div>
+            </label>
+          </div>
+        </div>
+
         <div className="mt-10">
           <h3 className="text-xl font-bold text-orange-400 mb-5">
             🛒 Order Summary
@@ -199,7 +267,7 @@ export default function CheckoutModal({
             onClick={handlePlaceOrder}
             className="flex-1 bg-green-500 hover:bg-green-600 py-3 rounded-xl font-bold"
           >
-            Place Order
+            {paymentMethod === "COD" ? "Place Order" : "Proceed to Payment"}
           </button>
         </div>
       </div>

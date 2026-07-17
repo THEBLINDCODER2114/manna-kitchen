@@ -1,93 +1,61 @@
 import { NextResponse } from "next/server";
+import { createOrder } from "@/lib/createOrder";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
+const { data: settings, error } = await supabaseAdmin
+  .from("settings")
+  .select("kitchen_open, closing_message")
+  .eq("id", 1)
+  .single();
 
-    const {
-      customerName,
-      customerPhone,
-      customerAddress,
-      customerLandmark,
-      orderNote,
-      cart,
-    } = body;
+if (error) {
+  return Response.json(
+    { error: "Unable to check kitchen status." },
+    { status: 500 }
+  );
+}
 
-    // Insert Customer
-    const { data: customer, error: customerError } = await supabaseAdmin
-      .from("customers")
-      .insert({
-        full_name: customerName,
-        phone: customerPhone,
-        address: customerAddress,
-        landmark: customerLandmark,
-      })
-      .select()
-      .single();
+if (!settings.kitchen_open) {
+  return Response.json(
+    {
+      error:
+        settings.closing_message ||
+        "Kitchen is currently closed.",
+    },
+    { status: 403 }
+  );
+}
 
-    if (customerError) {
-      console.error(customerError);
-      return NextResponse.json(
-        { success: false, error: customerError.message },
-        { status: 500 }
-      );
-    }
+    await createOrder({
+      customerName: body.customerName,
+      customerPhone: body.customerPhone,
+      customerAddress: body.customerAddress,
+      customerLandmark: body.customerLandmark,
+      orderNote: body.orderNote,
+      cart: body.cart,
 
-    // Insert Order
-    const { data: order, error: orderError } = await supabaseAdmin
-      .from("orders")
-      .insert({
-        customer_id: customer.id,
-        total: cart.reduce(
-          (sum: number, item: any) => sum + item.price * item.quantity,
-          0
-        ),
-        status: "Pending",
-        notes: orderNote,
-      })
-      .select()
-      .single();
+      paymentMethod: body.paymentMethod ?? "COD",
+      paymentStatus: body.paymentStatus ?? "Pending",
 
-    if (orderError) {
-      console.error(orderError);
-      return NextResponse.json(
-        { success: false, error: orderError.message },
-        { status: 500 }
-      );
-    }
-
-    // Insert Order Items
-    const orderItems = cart.map((item: any) => ({
-      order_id: order.id,
-      menu_item_id: item.id,
-      quantity: item.quantity,
-      price: item.price,
-      bucket_type: item.bucketType ?? null,
-      addons: item.addonsSelected ?? [],
-    }));
-
-    const { error: orderItemsError } = await supabaseAdmin
-      .from("order_items")
-      .insert(orderItems);
-
-    if (orderItemsError) {
-      console.error(orderItemsError);
-      return NextResponse.json(
-        { success: false, error: orderItemsError.message },
-        { status: 500 }
-      );
-    }
+      razorpayOrderId: body.razorpayOrderId,
+      razorpayPaymentId: body.razorpayPaymentId,
+      razorpaySignature: body.razorpaySignature,
+    });
 
     return NextResponse.json({
       success: true,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
 
     return NextResponse.json(
       {
         success: false,
+        error: error.message,
       },
       {
         status: 500,

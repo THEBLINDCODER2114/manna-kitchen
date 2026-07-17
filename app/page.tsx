@@ -12,7 +12,8 @@ import CheckoutModal from "@/components/CheckoutModal";
 import AddOnModal from "@/components/AddOnModal";
 import Invoice from "@/components/Invoice";
 import { toPng } from "html-to-image";
-
+import { useKitchenStatus } from "@/hooks/useKitchenStatus";
+import { toast } from "sonner";
 import { getMenuItems } from "@/lib/menu";
 
 export default function Home() {
@@ -23,6 +24,7 @@ export default function Home() {
   const [vegOnly, setVegOnly] = useState(false);
   const [nonVegOnly, setNonVegOnly] = useState(false);
   const [orderNote, setOrderNote] = useState("");
+  const { settings } = useKitchenStatus();
   const [loading, setLoading] = useState(true);
   const [menuItems, setMenuItems] = useState<any[]>([]);
 
@@ -60,34 +62,34 @@ export default function Home() {
   }, []);
 
   async function loadMenu() {
-  const data = await getMenuItems();
-  setMenuItems(data);
-}
-  useEffect(() => {
-  loadMenu();
-
-  const channel = supabase
-    .channel("customer-menu")
-    .on(
-  "postgres_changes",
-  {
-    event: "*",
-    schema: "public",
-    table: "menu_items",
-  },
-  (payload) => {
-    console.log("Realtime menu event:", payload);
-    loadMenu();
+    const data = await getMenuItems();
+    setMenuItems(data);
   }
-)
-    .subscribe((status) => {
-  console.log("Customer Realtime:", status);
-});
+  useEffect(() => {
+    loadMenu();
 
-  return () => {
-    supabase.removeChannel(channel);
-  };
-}, []);
+    const channel = supabase
+      .channel("customer-menu")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "menu_items",
+        },
+        (payload) => {
+          console.log("Realtime menu event:", payload);
+          loadMenu();
+        },
+      )
+      .subscribe((status) => {
+        console.log("Customer Realtime:", status);
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   useEffect(() => {
     localStorage.setItem("manna-cart", JSON.stringify(cart));
@@ -238,6 +240,20 @@ export default function Home() {
         setVegOnly={setVegOnly}
         setNonVegOnly={setNonVegOnly}
       />
+
+      {settings && !settings.kitchen_open && (
+        <div className="bg-red-600 text-white py-4 px-6 text-center shadow-lg">
+          <div className="max-w-7xl mx-auto">
+            <h2 className="text-xl md:text-2xl font-bold">
+              🔴 We're Currently Closed
+            </h2>
+
+            <p className="mt-2 text-sm md:text-base">
+              {settings.closing_message || "We'll be back soon!"}
+            </p>
+          </div>
+        </div>
+      )}
 
       <Hero />
 
@@ -451,12 +467,21 @@ shadow-xl
         orderNote={orderNote}
         setOrderNote={setOrderNote}
         generateInvoice={generateInvoice}
-        openCheckout={() => setCheckoutOpen(true)}
+        openCheckout={() => {
+          if (settings && !settings.kitchen_open) {
+            toast.error(
+              settings?.closing_message || "Kitchen is currently closed.",
+            );
+            return;
+          }
+
+          setCheckoutOpen(true);
+        }}
         closeCart={() => setCartOpen(false)}
       />
 
       <CheckoutModal
-        isOpen={checkoutOpen}
+        isOpen={checkoutOpen && (settings?.kitchen_open ?? true)}
         onClose={() => setCheckoutOpen(false)}
         cart={cart}
         orderNote={orderNote}
