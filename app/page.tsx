@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import Hero from "@/components/Hero";
 import Loader from "@/components/Loader";
@@ -27,6 +27,8 @@ export default function Home() {
   const { settings } = useKitchenStatus();
   const [loading, setLoading] = useState(true);
   const [menuItems, setMenuItems] = useState<any[]>([]);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
 
   const generateInvoice = async () => {
     const node = document.getElementById("invoice");
@@ -59,6 +61,27 @@ export default function Home() {
     if (savedCart) {
       setCart(JSON.parse(savedCart));
     }
+  }, []);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      const target = event.target as Node;
+
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(target) &&
+        menuButtonRef.current &&
+        !menuButtonRef.current.contains(target)
+      ) {
+        setMenuOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
   async function loadMenu() {
@@ -368,6 +391,7 @@ gap-6"
       <Footer />
 
       <button
+        ref={menuButtonRef}
         onClick={() => setMenuOpen(!menuOpen)}
         className="
   fixed
@@ -389,6 +413,7 @@ md:right-6
       </button>
       {menuOpen && (
         <div
+          ref={menuRef}
           className="
 fixed
 bottom-24

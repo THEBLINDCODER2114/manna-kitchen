@@ -24,10 +24,14 @@ export default function CheckoutModal({
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
   const [customerLandmark, setCustomerLandmark] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"COD" | "ONLINE">("COD");
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   const handlePlaceOrder = async () => {
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
     if (!customerName || !customerPhone || !customerAddress) {
       alert("Please fill all required fields.");
       return;
@@ -46,6 +50,7 @@ export default function CheckoutModal({
 
       if (!result.success) {
         toast.error(result.error || "Failed to place order");
+        setIsSubmitting(false);
         return;
       }
 
@@ -55,7 +60,7 @@ export default function CheckoutModal({
       setCustomerPhone("");
       setCustomerAddress("");
       setCustomerLandmark("");
-
+      setIsSubmitting(false);
       onOrderPlaced();
       onClose();
 
@@ -63,26 +68,32 @@ export default function CheckoutModal({
     }
 
     // ONLINE PAYMENT
-    await payOnline({
-      customerName,
-      customerPhone,
-      customerAddress,
-      customerLandmark,
-      orderNote,
-      cart,
+    try {
+      await payOnline({
+        customerName,
+        customerPhone,
+        customerAddress,
+        customerLandmark,
+        orderNote,
+        cart,
 
-      onSuccess: () => {
-        toast.success("🎉 Payment Successful!");
+        onSuccess: () => {
+          toast.success("🎉 Payment Successful!");
 
-        setCustomerName("");
-        setCustomerPhone("");
-        setCustomerAddress("");
-        setCustomerLandmark("");
+          setCustomerName("");
+          setCustomerPhone("");
+          setCustomerAddress("");
+          setCustomerLandmark("");
 
-        onOrderPlaced();
-        onClose();
-      },
-    });
+          setIsSubmitting(false);
+
+          onOrderPlaced();
+          onClose();
+        },
+      });
+    } catch {
+      setIsSubmitting(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -250,6 +261,7 @@ export default function CheckoutModal({
 
         <div className="mt-8 flex gap-4">
           <button
+            disabled={isSubmitting}
             onClick={() => {
               setCustomerName("");
               setCustomerPhone("");
@@ -258,16 +270,23 @@ export default function CheckoutModal({
 
               onClose();
             }}
-            className="flex-1 bg-zinc-700 py-3 rounded-xl font-bold"
+            className="flex-1 bg-zinc-700 py-3 rounded-xl font-bold disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancel
           </button>
 
           <button
             onClick={handlePlaceOrder}
-            className="flex-1 bg-green-500 hover:bg-green-600 py-3 rounded-xl font-bold"
+            disabled={isSubmitting}
+            className="flex-1 bg-green-500 hover:bg-green-600 py-3 rounded-xl font-bold disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {paymentMethod === "COD" ? "Place Order" : "Proceed to Payment"}
+            {isSubmitting
+              ? paymentMethod === "COD"
+                ? "⏳ Placing Order..."
+                : "⏳ Preparing Payment..."
+              : paymentMethod === "COD"
+                ? "Place Order"
+                : "Proceed to Payment"}
           </button>
         </div>
       </div>
