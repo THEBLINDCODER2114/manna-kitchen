@@ -32,9 +32,19 @@ export default function CheckoutModal({
     if (isSubmitting) return;
 
     setIsSubmitting(true);
-    if (!customerName || !customerPhone || !customerAddress) {
-      alert("Please fill all required fields.");
-      return;
+    if (!customerName.trim()) {
+      setIsSubmitting(false);
+      return toast.error("Please enter your name.");
+    }
+
+    if (!customerPhone.trim()) {
+      setIsSubmitting(false);
+      return toast.error("Please enter your phone number.");
+    }
+
+    if (!customerAddress.trim()) {
+      setIsSubmitting(false);
+      return toast.error("Please enter your delivery address.");
     }
 
     // CASH ON DELIVERY

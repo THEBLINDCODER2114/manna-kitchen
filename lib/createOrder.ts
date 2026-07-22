@@ -70,12 +70,19 @@ export async function createOrder({
       throw new Error(`Menu item ${item.id} not found`);
     }
 
-    total += Number(menu.price) * item.quantity;
+    const addonsTotal = (item.addonsSelected ?? []).reduce(
+      (sum: number, addon: any) => sum + Number(addon.price),
+      0,
+    );
+
+    const itemPrice = Number(menu.price) + addonsTotal;
+
+    total += itemPrice * item.quantity;
 
     return {
       menu_item_id: item.id,
       quantity: item.quantity,
-      price: menu.price,
+      price: itemPrice,
       bucket_type: item.bucketType ?? null,
       addons: item.addonsSelected ?? [],
     };
